@@ -1,0 +1,25 @@
+name: Check main PR source
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  check-source:
+    name: Only dev can merge into main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source branch
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+          SOURCE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          TARGET_REPO: ${{ github.repository }}
+        run: |
+          if [[ "$SOURCE_BRANCH" != "dev" || "$SOURCE_REPO" != "$TARGET_REPO" ]]; then
+            echo "::error::PRs into main must come from this repository's dev branch."
+            exit 1
+          fi
